@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sani-Trust UI v1</title>
+    <script src="https://unpkg.com/@stacks/transactions@latest/dist/transactions.umd.js"></script>
+    <script src="https://unpkg.com/@stacks/connect@latest/dist/connect.umd.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+      label { display:block; margin-top: .5rem; font-weight: 600; }
+      input { padding:.5rem; width: 100%; }
+      button { margin-top: .5rem; padding:.6rem 1rem; cursor:pointer; }
+      .row { display:flex; gap:1rem; }
+      .row > .card { flex:1; }
+    </style>
+  </head>
+  <body>
+    <h1>Sani-Trust UI v1</h1>
+    <div class="card">
+      <label>Contract Address</label>
+      <input id="contractAddress" placeholder="ST..." />
+      <label>Contract Name</label>
+      <input id="contractName" value="health-insurance" />
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Connect Wallet</h3>
+        <button id="connectBtn">Connect</button>
+        <div id="addr"></div>
+      </div>
+      <div class="card">
+        <h3>Deposit Liquidity</h3>
+        <label>Amount (uSTX logical units)</label>
+        <input id="depAmount" type="number" min="0" />
+        <button id="depositBtn">Deposit</button>
+      </div>
+      <div class="card">
+        <h3>Create Policy</h3>
+        <label>Premium (uSTX)</label>
+        <input id="premium" type="number" min="0" />
+        <label>Coverage (uSTX)</label>
+        <input id="coverage" type="number" min="0" />
+        <button id="createPolicyBtn">Create Policy</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Pay Premium</h3>
+        <label>Amount (uSTX)</label>
+        <input id="payAmount" type="number" min="0" />
+        <button id="payBtn">Pay</button>
+      </div>
+      <div class="card">
+        <h3>File Claim</h3>
+        <label>Amount (uSTX)</label>
+        <input id="claimAmount" type="number" min="0" />
+        <button id="claimBtn">File Claim</button>
+      </div>
+      <div class="card">
+        <h3>Admin: Approve Claim</h3>
+        <label>Claim ID</label>
+        <input id="claimId" type="number" min="0" />
+        <label>Payout Amount (uSTX)</label>
+        <input id="approveAmount" type="number" min="0" />
+        <button id="approveBtn">Approve</button>
+      </div>
+    </div>
+
+    <script>
+      const { openContractCall, showConnect } = window.Connect;
+      const t = window.transactions;
+
+      let userAddress = null;
+
+      const network = { 
+        // devnet by default; customize as needed
+        version: 'testnet',
+      };
+
+      function getContract() {
+        return {
+          address: document.getElementById('contractAddress').value.trim(),
+          name: document.getElementById('contractName').value.trim() || 'health-insurance'
+        };
+      }
+
+      document.getElementById('connectBtn').onclick = () => {
+        showConnect({
+          appDetails: { name: 'Sani-Trust', icon: window.location.origin + '/favicon.ico' },
+          onFinish: ({ userSession }) => {
+            const profiles = userSession.store.getSessionData();
+            try {
+              userAddress = userSession.loadUserData().profile.stxAddress.testnet;
+            } catch {}
+            document.getElementById('addr').innerText = userAddress ? `Connected: ${userAddress}` : 'Connected';
+          }
+        });
+      };
+
+      async function callPublic(fn, args) {
+        const { address, name } = getContract();
+        if (!address) { alert('Enter contract address'); return; }
+        await openContractCall({
+          contractAddress: address,
+          contractName: name,
+          functionName: fn,
+          functionArgs: args,
+          network,
+          onFinish: (data) => { console.log('tx submitted', data); alert('Transaction submitted'); },
+        });
+      }
+
+      document.getElementById('depositBtn').onclick = () => {
+        const amt = BigInt(document.getElementById('depAmount').value || '0');
+        callPublic('deposit-liquidity', [t.uintCV(amt)]);
+      };
+
+      document.getElementById('createPolicyBtn').onclick = () => {
+        const p = BigInt(document.getElementById('premium').value || '0');
+        const c = BigInt(document.getElementById('coverage').value || '0');
+        callPublic('create-policy', [t.uintCV(p), t.uintCV(c)]);
+      };
+
+      document.getElementById('payBtn').onclick = () => {
+        const amt = BigInt(document.getElementById('payAmount').value || '0');
+        callPublic('pay-premium', [t.uintCV(amt)]);
+      };
+
+      document.getElementById('claimBtn').onclick = () => {
+        const amt = BigInt(document.getElementById('claimAmount').value || '0');
+        callPublic('file-claim', [t.uintCV(amt)]);
+      };
+
+      document.getElementById('approveBtn').onclick = () => {
+        const id = BigInt(document.getElementById('claimId').value || '0');
+        const amt = BigInt(document.getElementById('approveAmount').value || '0');
+        callPublic('approve-claim', [t.uintCV(id), t.uintCV(amt)]);
+      };
+    </script>
+  </body>
+</html>
