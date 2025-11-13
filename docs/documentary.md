@@ -7,7 +7,7 @@ This documentary walks through a from-scratch build of a minimal health insuranc
 - Tests validating behavior
 - A basic UI and a redesigned UI
 
-The intent is educational: show an end-to-end flow without leaning on auto-generated code.
+
 
 ## 1. Motivation and Requirements
 
@@ -16,22 +16,10 @@ The intent is educational: show an end-to-end flow without leaning on auto-gener
 - Admins (contract owner) can approve claims which reduces pool liquidity.
 - Provide tests and two UI iterations.
 
-Would count (addressed here):
-- New set of Clarity functions for depositing liquidity into a protocol
-- Set of Clarinet tests to test that functionality
-- UI to connect to those Clarity functions
-- Redesign of that UI to improve user experience
-
-Would not count (excluded):
-- Only adding a read-only function
-- Only a README
-- Only a single button UI
-- Pure reformatting/styling changes
-- Auto-generated scaffolds without substance
 
 ## 2. Architecture Overview
 
-- Contract: `contracts/health-insurance.clar`
+- Contract: `contracts/Sani-trust.clar`
   - Tracks `total-liquidity` and `total-shares`
   - `deposit-liquidity(amount)` mints shares; `withdraw-liquidity(shares)` burns shares
   - Policies and claims with simple lifecycle
@@ -100,6 +88,3 @@ To use with devnet:
 - Add access control beyond single owner if needed (role-based)
 - Guard against rounding edge cases on shares accounting
 - Use audited token contracts for capital flows
-
----
-Built for educational purposes. Use at your own risk.

@@ -5,10 +5,6 @@ authors = []
 telemetry = true
 cache_dir = './.cache'
 requirements = []
-[contracts.Sani-trust]
-path = 'contracts/Sani-trust.clar'
-clarity_version = 3
-epoch = 3.1
 [repl.analysis]
 passes = ['check_checker']
 
@@ -22,7 +18,7 @@ callee_filter = false
 enabled = false
 api_url = 'https://api.hiro.so'
 
-[contracts.health-insurance]
-path = 'contracts/health-insurance.clar'
+[contracts.Sani-trust]
+path = 'contracts/Sani-trust.clar'
 clarity_version = 3
 epoch = 3.1
